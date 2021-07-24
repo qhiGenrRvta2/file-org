@@ -14,7 +14,7 @@ def main():
     for month in months:
         month_dir = os.path.isdir(os.path.join(pwd, month))
         if not month_dir: 
-            os.mkdir(dir_name)
+            os.mkdir(month_dir)
 
 if __name__=="__main__":
     main()
