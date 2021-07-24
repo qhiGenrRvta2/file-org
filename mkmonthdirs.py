@@ -12,8 +12,8 @@ def main():
     pwd = os.getcwd()
         
     for month in months:
-        month_dir = os.path.isdir(os.path.join(pwd, month))
-        if not month_dir: 
+        month_dir = os.path.join(pwd, month)
+        if not os.path.isdir(month_dir): 
             os.mkdir(month_dir)
 
 if __name__=="__main__":
