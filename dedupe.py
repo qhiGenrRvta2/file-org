@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import collections
 import os
 import hashlib
 
@@ -11,8 +10,16 @@ def main():
     # TODO: accept command line argument specifying a path to look in. 
     start_directory = os.getcwd()
     files = get_files(start_directory)
-    # TODO: find files with matching hashes
-    # https://stackoverflow.com/questions/20462868/how-to-find-duplicate-values-in-dictionaries
+
+    # Set up hash table - dictionary with keys corresponding to hashes, empty list for storing file locations.
+    hash_table = {files[entry]['hash']: [] for entry in files}
+
+    for current_file in files:
+        hash_table[files[current_file]['hash']].append(files[current_file]['location'])
+
+    for element in hash_table:
+        if len(hash_table[element]) > 1:
+            print("found one")
 
 
 def generate_hash(my_file):
