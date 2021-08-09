@@ -2,24 +2,50 @@
 
 import os
 import hashlib
+import rich.console
 
 def main():
     """
-    Identifies duplicate files within a directory.  
+    Handles the user interface.
+    Main application logic is in the find_duplicates function.
     """
     # TODO: accept command line argument specifying a path to look in. 
     start_directory = os.getcwd()
-    files = get_files(start_directory)
+    
+    # Set up a console for showing progress bar / providing nice output
+    console = rich.console.Console(force_terminal=False)
 
-    # Set up hash table - dictionary with keys corresponding to hashes, empty list for storing file locations.
+    # Do the useful stuff.
+    with console.status(status="Searching for duplicate files"):
+        result = find_duplicates(start_directory, console)
+
+    # Provide output.
+    if result == 0:
+        console.print("No duplicates found!")
+    
+
+def find_duplicates(start_directory, output_console):
+    """
+    Main script logic.
+    Searches for and hashes files.
+    Identifies duplicates using the hashes.
+    Puts lists of duplicates into a buffer for printing.
+    """
+
+    files = get_files(start_directory)
     hash_table = {files[entry]['hash']: [] for entry in files}
 
     for current_file in files:
         hash_table[files[current_file]['hash']].append(files[current_file]['location'])
 
+    group_count = 0
+
     for element in hash_table:
         if len(hash_table[element]) > 1:
-            print("found one")
+            group_count += 1
+            print_group(output_console, group_count, hash_table[element])
+
+    return group_count
 
 
 def generate_hash(my_file):
@@ -53,6 +79,14 @@ def get_files(start_directory):
             results[entry] = {'location': entry, 'hash': generate_hash(entry)}
         
     return results
+
+def print_group(console, group_count, group_list):
+    """
+    Prints out a group of files believed to be duplicates.
+    """
+    console.print(f"Group {group_count}:")
+    for i in range(len(group_list)):
+        console.print(f"\t {group_list[i]}")
 
 if __name__=="__main__":
     main()
