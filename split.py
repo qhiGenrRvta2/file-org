@@ -3,6 +3,7 @@
 import math
 import os
 import re
+import shutil
 
 def main():
     """
@@ -25,25 +26,45 @@ def main():
     
     # Highest numbered file
     highest_file_number = max(file_numbers)
-
     # Temporary list for storing which file we are looking at.
     new_directory_ends = []
    
     # First directory
     position = range_bottom + size
 
-    # Any more directories to create? 'not' test ensures at least the start position gets onto our list.
-    while position <= highest_file_number or not new_directory_ends:
+    tracker = True
+
+    # Identify any further directories.
+    # Evaluate test inside the while loop with a tracker variable - otherwise, stops one iteration short
+    while tracker or not new_directory_ends:
+        if position > highest_file_number:
+            tracker = False
         new_directory_ends.append(position)
         position += size 
-   
+
+    # Generate list of directors needed.
     photo_dirs = [f"{entry-size}-{entry-1}" for entry in new_directory_ends]
     
-    # check if directories exist; if not, create them.
+    # Check if directories exist; if not, create them.
+    # Move files home.
     for folder in photo_dirs:
+        
         tmp_path = os.path.join(os.getcwd(), folder)
+        
         if not os.path.isdir(tmp_path):
             os.mkdir(tmp_path)
+        
+        start = int(folder.split('-')[0])
+        # Add 1 to the end position because 'range' is not inclusive!
+        end = int(folder.split('-')[1]) + 1
+
+        for entry in file_list:
+            # Move files into directories.
+            if int(re.findall('\d+', entry)[0]) in range(start, end):
+                # https://docs.python.org/3/library/shutil.html
+                print(f"putting {entry} into {folder}")
+                file_loc = os.path.join(os.getcwd(), entry)
+                shutil.move(file_loc, tmp_path)
 
 if __name__ == '__main__':
     main()
