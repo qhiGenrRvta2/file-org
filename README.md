@@ -1,0 +1,3 @@
+- dedupe.py: finds duplicate files.
+- mkmonthdir.py: creates folders for January to December.
+- split.py: organises files into subfolders
