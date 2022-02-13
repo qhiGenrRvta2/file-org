@@ -29,6 +29,9 @@ class Entry():
         print(f'Deleting {self.path} !')
         #os.remove(self.path)
 
+    def __str__(self):
+        return f'{self.path} : hash {self.hash}'
+
 
 class Content():
     """
@@ -84,7 +87,10 @@ def main():
     console = rich.console.Console(highlight=False)
     with console.status(status='Searching for duplicate files...'):
         con = Content(target)
-        print(con.find_groups())
+        groups = con.find_groups()
+        for g in groups:
+            for f in g:
+                print(f)
 
 if __name__ == '__main__':
     main()
