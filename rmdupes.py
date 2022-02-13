@@ -21,11 +21,17 @@ class Entry():
         with open(self.path, 'rb') as curr_file:
             self.hash = hashlib.md5(curr_file.read()).hexdigest()
 
-    def is_copy(self):
+    def move_to_dir(self, new_dir):
         """
-        Does the filename suggest this file is a copy?
+        Moves file to new_dir
         """
-        if re.match(r'\s{1}[0-9]\.[a-zA-Z]{3,4}$', self.path):
+        filename = os.path.basename(self.path)
+        new_path = os.path.join(new_dir, self.path)
+        os.replace(self.path, new_path)
+        self.path = new_path
+
+    def is_whatsapp_img(self):
+        if re.match(os.path.basename(self.path), r'[A-Z]{4}\d{4}\.[A-Z]{3,4}'):
             return True
         return False
 
@@ -46,6 +52,7 @@ class Content():
     """
     def __init__(self, dir_path):
         self.files = []
+        self.start_dir = dir_path
         frontier = []
         elements = os.listdir(dir_path)
 
@@ -114,6 +121,13 @@ class Content():
         for removal in removals:
             removal.remove()
 
+    def organize_whatsapp_pics(self):
+        """
+        Moves whatsapp pics to a subfolder.
+        """
+        # TODO: create subfolder.
+        # Entry class already contains helper functions for moving files around
+        pass
 
 def main():
     """
@@ -125,10 +139,13 @@ def main():
         con = Content(target)
         con.propose_removals()
 
-    proceed = rich.prompt.Confirm.ask('Delete files?')
-    if proceed:
+    proceed_to_del = rich.prompt.Confirm.ask('Delete files?')
+    if proceed_to_del:
         con.remove_dupes()
-    print("Done.")
+
+    proceed_to_move = rich.prompt.Confirm.ask('Move whatsapp pics?')
+    if proceed_to_move:
+        con.organize_whatsapp_pics()
 
 if __name__ == '__main__':
     main()
