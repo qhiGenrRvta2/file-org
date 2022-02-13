@@ -1,4 +1,7 @@
-#/usr/bin/env python3
+#!/usr/bin/env python3
+"""
+Script for detecting and removing duplicate files.
+"""
 
 import copy
 import hashlib
@@ -6,6 +9,7 @@ import os
 import re
 
 import rich.console
+import rich.prompt
 
 class Entry():
     """
@@ -26,8 +30,11 @@ class Entry():
         return False
 
     def remove(self):
-        print(f'Deleting {self.path} !')
-        #os.remove(self.path)
+        """
+        Deletes file.
+        """
+        print(f'Deleting {self.path}...')
+        os.remove(self.path)
 
     def __str__(self):
         return f'{self.path} : hash {self.hash}'
@@ -59,6 +66,8 @@ class Content():
                 else:
                     self.files.append(Entry(p))
 
+        self.dupe_groups = self.find_groups()
+
     def find_groups(self):
         """
         Identify groups of duplicates.
@@ -66,7 +75,6 @@ class Content():
         dupe_groups = []
         # make a copy of the files list.
         fcopy = copy.deepcopy(self.files)
-        
         # construct groups of identical files.
         while len(fcopy) > 0:
             curr = fcopy.pop()
@@ -78,19 +86,49 @@ class Content():
                 discards = [x for x in fcopy if x in tmp]
                 for x in discards:
                     fcopy.remove(x)
-        
         return dupe_groups
 
+    def propose_removals(self):
+        """
+        Prints groups of files.  Proposes files for deletion.
+        """
+        for i in range(len(self.dupe_groups)):
+            print(f'Group {i+1} of {len(self.dupe_groups)}:')
+            group = self.dupe_groups[i]
+            group.sort(key=lambda x: x.path, reverse=True)
+            for e in group:
+                print(f'\t{e}')
+            print('The following will be removed:')
+            print(f'\t{[str(x) for x in group[1:]]}')
+
+    def remove_dupes(self):
+        """
+        Removes duplicate files.
+        """
+        removals = []
+
+        for group in self.dupe_groups:
+            group.sort(key=lambda x: x.path, reverse=True)
+            removals += group[1:]
+
+        for removal in removals:
+            removal.remove()
+
+
 def main():
-    
+    """
+    Provides CLI.
+    """
     target = os.getcwd()
     console = rich.console.Console(highlight=False)
     with console.status(status='Searching for duplicate files...'):
         con = Content(target)
-        groups = con.find_groups()
-        for g in groups:
-            for f in g:
-                print(f)
+        con.propose_removals()
+
+    proceed = rich.prompt.Confirm.ask('Delete files?')
+    if proceed:
+        con.remove_dupes()
+    print("Done.")
 
 if __name__ == '__main__':
     main()
